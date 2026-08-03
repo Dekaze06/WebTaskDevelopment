@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High-End Web Dev Checklist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: '#0a0a0a',
+                        card: '#141414',
+                        cardHover: '#1f1f1f',
+                        primary: '#d4d4d4',
+                        secondary: '#a3a3a3',
+                        accent: '#737373',
+                        success: '#f4f4f5'
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'bounce-slight': 'bounceSlight 0.3s ease-in-out',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            background-image: radial-gradient(ellipse 80% 60% at 10% -10%, rgba(255,255,255,0.06), transparent 60%);
+            background-attachment: fixed;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            padding-bottom: 220px; /* Space for fixed progress bar, incl. congrats message */
+        }
+        
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #f4f4f5, #d4d4d4, #a3a3a3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Custom Checkbox Styles */
+        .task-checkbox:checked + div {
+            background-color: #52525b;
+            border-color: #52525b;
+        }
+        
+        .task-checkbox:checked + div i {
+            opacity: 1;
+        }
+
+        .task-container {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .task-container:hover {
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 5px 20px -10px rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        /* Border Beam animation on hover */
+        @property --beam-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        .task-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: conic-gradient(from var(--beam-angle), transparent 0deg, transparent 300deg, #f4f4f5 330deg, #d4d4d4 345deg, #a3a3a3 360deg);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .task-container:hover::before {
+            opacity: 1;
+            animation: beam-rotate 2.5s linear infinite;
+        }
+
+        @keyframes beam-rotate {
+            to { --beam-angle: 360deg; }
+        }
+
+        /* Detail button */
+        .task-detail-btn {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Task detail modal */
+        #task-modal-overlay {
+            transition: opacity 0.25s ease;
+        }
+        #task-modal-box {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+
+        /* Animation classes for JS observer */
+        .opacity-0 { opacity: 0; }
+        .reveal { animation: fadeInUp 0.8s ease-out forwards; }
+
+        /* Screen transition: Landing <-> App */
+        #screen-landing, #screen-app {
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #screen-landing.is-leaving {
+            opacity: 0;
+            transform: translateX(60px);
+            pointer-events: none;
+        }
+        #screen-app.is-hidden-init {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+        #screen-app.is-entered {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Particles background: fades/slides out together with #screen-landing, */
+        /* revealing the dark gradient background underneath for the app screen. */
+        #particles-bg {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #particles-bg.is-leaving {
+            opacity: 0;
+            transform: translateX(60px);
+        }
+
+        /* ============================= */
+        /* INTERACTIVE HOVER BUTTON      */
+        /* (Mulai Develop)               */
+        /* ============================= */
+        .ihb-start {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 12rem;
+            overflow: hidden;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.85rem 2rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            letter-spacing: 0.01em;
+            color: #f3f4f6;
+            cursor: pointer;
+            transition: min-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        padding 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .ihb-start:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 15px 40px -8px rgba(255, 255, 255, 0.3);
+        }
+        .ihb-start[data-status="loading"],
+        .ihb-start[data-status="success"] {
+            min-width: 3.25rem;
+            padding: 0.85rem;
+            cursor: default;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .ihb-start .ihb-dot {
+            position: absolute;
+            left: 1.4rem;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            margin-top: -4px;
+            border-radius: 9999px;
+            background: linear-gradient(to right, #f4f4f5, #d4d4d4, #a3a3a3);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+        .ihb-start:hover .ihb-dot,
+        .ihb-start[data-status="loading"] .ihb-dot,
+        .ihb-start[data-status="success"] .ihb-dot {
+            transform: scale(40);
+        }
+        .ihb-start .ihb-idle-label {
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ihb-start:hover .ihb-idle-label,
+        .ihb-start[data-status="loading"] .ihb-idle-label,
+        .ihb-start[data-status="success"] .ihb-idle-label {
+            transform: translateX(5rem);
+            opacity: 0;
+        }
+        .ihb-start .ihb-hover-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0a0a;
+            transform: translateX(-4rem);
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ihb-start:hover .ihb-hover-layer,
+        .ihb-start[data-status="loading"] .ihb-hover-layer,
+        .ihb-start[data-status="success"] .ihb-hover-layer {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .ihb-start .ihb-state {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .ihb-start[data-status="idle"] .ihb-state-idle,
+        .ihb-start[data-status="loading"] .ihb-state-loading,
+        .ihb-start[data-status="success"] .ihb-state-success {
+            display: flex;
+        }
+        .ihb-start .ihb-spinner {
+            width: 14px;
+            height: 14px;
+            border-radius: 9999px;
+            border: 2px solid rgba(10, 10, 10, 0.25);
+            border-top-color: #0a0a0a;
+            animation: ihb-spin 0.6s linear infinite;
+        }
+        @keyframes ihb-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Project row selection state (Load Project list) */
+        .project-row.is-selected {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Typing Fade Smooth Animation */
+        @keyframes typingFadeSmooth {
+            0% {
+                opacity: 0;
+                -webkit-mask-size: 200% 100%;
+                -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 50%);
+                -webkit-mask-position: 100% 0;
+                mask-size: 200% 100%;
+                mask-image: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 50%);
+                mask-position: 100% 0;
+                transform: translateX(-8px);
+            }
+            100% {
+                opacity: 1;
+                -webkit-mask-position: 0 0;
+                mask-position: 0 0;
+                transform: translateX(0);
+            }
+        }
+        .task-desc {
+            opacity: 0;
+        }
+        .reveal .task-desc {
+            animation: typingFadeSmooth 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* ============================= */
+        /* SLIDE-PER-PAGE SECTION SYSTEM */
+        /* ============================= */
+        #slides-viewport {
+            display: grid;
+            touch-action: pan-y;
+        }
+        .slide-panel {
+            grid-column: 1;
+            grid-row: 1;
+            opacity: 0;
+            transform: translateX(48px);
+            pointer-events: none;
+            z-index: 1;
+            transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s ease;
+        }
+        .slide-panel.slide-active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            z-index: 2;
+        }
+        .slide-panel.slide-prev {
+            opacity: 0;
+            transform: translateX(-48px);
+        }
+        .slide-panel.slide-next {
+            opacity: 0;
+            transform: translateX(48px);
+        }
+
+        /* Stepper nav */
+        .stepper-item .stepper-dot {
+            background-color: #0a0a0a;
+        }
+        .stepper-item.is-active .stepper-dot {
+            border-color: var(--step-color, #a3a3a3);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--step-color, #a3a3a3) 18%, transparent), 0 8px 20px -6px color-mix(in srgb, var(--step-color, #a3a3a3) 60%, transparent);
+            transform: scale(1.08);
+        }
+        .stepper-item.is-active .stepper-label {
+            color: #f3f4f6;
+        }
+        .stepper-item.is-done .stepper-dot {
+            border-color: var(--step-color, #a3a3a3);
+            opacity: 0.85;
+        }
+        .stepper-item:hover .stepper-dot {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .stepper-item {
+            transition: transform 0.2s ease;
+        }
+        .stepper-item:active {
+            transform: scale(0.96);
+        }
+        .stepper-dot {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Slide control buttons */
+        #btn-slide-prev:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="antialiased relative">
+
+    <!-- Dark Gradient Background (clean, elegant) -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none bg-black">
+        <div class="absolute inset-0">
+            <div class="absolute inset-0 opacity-100"
+                 style="background: radial-gradient(100% 100% at 0% 0%, rgb(34, 34, 34) 0%, rgb(10, 10, 10) 100%); -webkit-mask: radial-gradient(125% 100% at 0% 0%, rgb(0,0,0) 0%, rgba(0,0,0,0.224) 88.2883%, rgba(0,0,0,0) 100%); mask: radial-gradient(125% 100% at 0% 0%, rgb(0,0,0) 0%, rgba(0,0,0,0.224) 88.2883%, rgba(0,0,0,0) 100%);">
+
+                <!-- Skewed fading indigo/purple/blue streaks (matches primary/secondary/accent) -->
+                <div class="absolute inset-0 opacity-20"
+                     style="background: linear-gradient(rgb(255,255,255) 0%, rgba(255,255,255,0) 100%); -webkit-mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 20%, rgba(0,0,0,0) 36%, rgb(0,0,0) 55%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 78%, rgba(0,0,0,0) 97%); mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 20%, rgba(0,0,0,0) 36%, rgb(0,0,0) 55%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 78%, rgba(0,0,0,0) 97%); transform: skewX(45deg);"></div>
+
+                <div class="absolute inset-0 opacity-20"
+                     style="background: linear-gradient(rgb(190,190,190) 0%, rgba(190,190,190,0) 100%); -webkit-mask: linear-gradient(90deg, rgba(0,0,0,0) 11%, rgb(0,0,0) 25%, rgba(0,0,0,0.55) 41%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 78%, rgba(0,0,0,0) 97%); mask: linear-gradient(90deg, rgba(0,0,0,0) 11%, rgb(0,0,0) 25%, rgba(0,0,0,0.55) 41%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 78%, rgba(0,0,0,0) 97%); transform: skewX(45deg);"></div>
+
+                <div class="absolute inset-0 opacity-20"
+                     style="background: linear-gradient(rgb(140,140,140) 0%, rgba(140,140,140,0) 100%); -webkit-mask: linear-gradient(90deg, rgba(0,0,0,0) 9%, rgb(0,0,0) 20%, rgba(0,0,0,0.55) 28%, rgba(0,0,0,0.424) 40%, rgb(0,0,0) 48%, rgba(0,0,0,0.267) 54%, rgba(0,0,0,0.13) 78%, rgb(0,0,0) 88%, rgba(0,0,0,0) 97%); mask: linear-gradient(90deg, rgba(0,0,0,0) 9%, rgb(0,0,0) 20%, rgba(0,0,0,0.55) 28%, rgba(0,0,0,0.424) 40%, rgb(0,0,0) 48%, rgba(0,0,0,0.267) 54%, rgba(0,0,0,0.13) 78%, rgb(0,0,0) 88%, rgba(0,0,0,0) 97%); transform: skewX(45deg);"></div>
+
+                <div class="absolute inset-0 opacity-20"
+                     style="background: linear-gradient(rgb(255,255,255) 0%, rgba(255,255,255,0) 100%); -webkit-mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 17%, rgba(0,0,0,0.55) 26%, rgb(0,0,0) 35%, rgba(0,0,0,0) 47%, rgba(0,0,0,0.13) 69%, rgb(0,0,0) 79%, rgba(0,0,0,0) 97%); mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 17%, rgba(0,0,0,0.55) 26%, rgb(0,0,0) 35%, rgba(0,0,0,0) 47%, rgba(0,0,0,0.13) 69%, rgb(0,0,0) 79%, rgba(0,0,0,0) 97%); transform: skewX(45deg);"></div>
+
+                <div class="absolute inset-0 opacity-20"
+                     style="background: linear-gradient(rgb(190,190,190) 0%, rgba(190,190,190,0) 100%); -webkit-mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 20%, rgba(0,0,0,0.55) 27%, rgb(0,0,0) 42%, rgba(0,0,0,0) 48%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 74%, rgb(0,0,0) 82%, rgba(0,0,0,0.47) 88%, rgba(0,0,0,0) 97%); mask: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgb(0,0,0) 20%, rgba(0,0,0,0.55) 27%, rgb(0,0,0) 42%, rgba(0,0,0,0) 48%, rgba(0,0,0,0.13) 67%, rgb(0,0,0) 74%, rgb(0,0,0) 82%, rgba(0,0,0,0.47) 88%, rgba(0,0,0,0) 97%); transform: skewX(45deg);"></div>
+            </div>
+        </div>
+
+        <!-- Subtle noise texture -->
+        <div class="absolute inset-0 opacity-5 bg-repeat"
+             style="background-image: url('https://framerusercontent.com/images/6mcf62RlDfRfU61Yg5vb2pefpi4.png'); background-size: 149.76px;"></div>
+
+        <!-- Subtle dot pattern overlay -->
+        <div class="absolute inset-0 opacity-20"
+             style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0); background-size: 20px 20px;"></div>
+
+        <!-- Subtle radial highlight -->
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 0%, rgba(34,34,34,0.25) 0%, transparent 60%);"></div>
+    </div>
+
+    <!-- Fluid Particles Background (Landing screen only) -->
+    <!-- Sits above the dark gradient (-z-10) but below the page content. -->
+    <!-- Fades/slides out in sync with #screen-landing when moving to the app screen. -->
+    <div id="particles-bg" class="fixed top-0 left-0 w-full h-full overflow-hidden z-[-5] pointer-events-none">
+        <canvas id="particles-canvas" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+    
+    <!-- ============================= -->
+    <!-- SCREEN 1: LANDING / START     -->
+    <!-- ============================= -->
+    <div id="screen-landing" class="min-h-screen w-full flex flex-col items-center justify-center px-6 relative z-10">
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-center reveal">
+            <span class="gradient-text">Web Task<br>Development</span>
+        </h1>
+        
+        <!-- Kalimat menarik yang baru ditambahkan -->
+        <p class="mt-6 text-gray-400 text-base md:text-lg text-center max-w-xl reveal" style="animation-delay: 0.1s;">
+            Susun langkah, pantau progres, dan ubah ide luar biasamu menjadi website yang nyata dengan checklist pengembangan web terstruktur ini.
+        </p>
+
+        <!-- Primary actions -->
+        <div class="flex items-center gap-3 mt-10 reveal" style="animation-delay: 0.2s;">
+            <button id="btn-new-project" type="button" class="px-5 py-2.5 rounded-full glass-panel border border-white/10 text-sm font-semibold text-gray-200 hover:border-primary/50 hover:text-white transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-plus text-xs"></i> New Project
+            </button>
+            <button id="btn-load-project" type="button" class="px-5 py-2.5 rounded-full glass-panel border border-white/10 text-sm font-semibold text-gray-200 hover:border-primary/50 hover:text-white transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-xs"></i> Load Project
+            </button>
+        </div>
+
+        <!-- Dynamic panel: new project input OR load project list -->
+        <div id="landing-panel" class="w-full max-w-md mt-6 hidden"></div>
+
+        <!-- Start button (Interactive Hover Button) -->
+        <button id="btn-start" type="button" data-status="idle" class="ihb-start hidden mt-8">
+            <span class="ihb-dot"></span>
+            <span class="ihb-idle-label">Mulai Develop</span>
+            <span class="ihb-hover-layer">
+                <span class="ihb-state ihb-state-idle">
+                    <span>Mulai Develop</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </span>
+                <span class="ihb-state ihb-state-loading">
+                    <span class="ihb-spinner"></span>
+                    <span>Menyiapkan...</span>
+                </span>
+                <span class="ihb-state ihb-state-success">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Siap!</span>
+                </span>
+            </span>
+        </button>
+    </div>
+
+    <!-- ============================= -->
+    <!-- SCREEN 2: STEP-BY-STEP APP    -->
+    <!-- ============================= -->
+    <div id="screen-app" class="hidden">
+
+    <!-- Hero Section -->
+    <section class="relative pt-16 pb-16 lg:pt-20 lg:pb-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel border border-white/10 text-xs font-medium text-gray-300 mb-3 mx-auto reveal">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span id="active-project-name">Project</span>
+            </div>
+            <button id="btn-back-to-landing" type="button" class="block mx-auto mb-5 text-[11px] text-white/90 hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i>Ganti Project
+            </button>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 reveal" style="animation-delay: 0.1s;">
+                Step-by-Step <br class="hidden md:block" />
+                <span class="gradient-text">Website Development</span>
+            </h1>
+            <p class="mt-4 max-w-2xl text-lg text-gray-400 mx-auto mb-10 reveal" style="animation-delay: 0.2s;">
+                Centang setiap prosesnya. Progres Anda akan otomatis tersimpan di browser. Mari kita bangun website luar biasa mulai dari PRD hingga Testing.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto px-6 lg:px-8 relative pb-20">
+
+        <!-- Stepper Nav -->
+        <div id="stepper-nav" class="mb-8 md:mb-12 select-none">
+            <div class="flex items-center gap-2 md:gap-4">
+
+                <!-- Kembali (flanks the step icons on the left) -->
+                <button id="btn-slide-prev" type="button" class="shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full glass-panel border border-white/10 text-gray-300 hover:border-white/30 hover:text-white transition-all duration-300 flex items-center justify-center" aria-label="Kembali ke langkah sebelumnya">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </button>
+
+                <div class="flex-1 flex items-start justify-between relative min-w-0">
+                <div class="absolute left-0 right-0 top-[19px] md:top-[23px] h-0.5 bg-white/10"></div>
+                <div id="stepper-progress-line" class="absolute left-0 top-[19px] md:top-[23px] h-0.5 bg-gradient-to-r from-primary via-secondary to-accent transition-all duration-500 ease-out" style="width:0%"></div>
+
+                <button type="button" class="stepper-item is-active group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="0" style="--step-color:#d4d4d4" aria-label="Ke bagian Planning & PRD">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-neutral-300/40 flex items-center justify-center">
+                        <i class="fa-solid fa-file-lines text-neutral-300 text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">PRD</span>
+                </button>
+
+                <button type="button" class="stepper-item group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="1" style="--step-color:#a3a3a3" aria-label="Ke bagian Front-End">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-neutral-400/40 flex items-center justify-center">
+                        <i class="fa-brands fa-react text-neutral-400 text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">Front-End</span>
+                </button>
+
+                <button type="button" class="stepper-item group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="2" style="--step-color:#d4d4d4" aria-label="Ke bagian Backend">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-neutral-300/40 flex items-center justify-center">
+                        <i class="fa-solid fa-database text-neutral-300 text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">Backend</span>
+                </button>
+
+                <button type="button" class="stepper-item group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="3" style="--step-color:#737373" aria-label="Ke bagian Integrasi">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-neutral-500/40 flex items-center justify-center">
+                        <i class="fa-solid fa-plug text-neutral-500 text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">Integrasi</span>
+                </button>
+
+                <button type="button" class="stepper-item group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="4" style="--step-color:#f3f4f6" aria-label="Ke bagian Deployment">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white/40 flex items-center justify-center">
+                        <i class="fa-solid fa-rocket text-white text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">Deploy</span>
+                </button>
+
+                <button type="button" class="stepper-item group relative flex flex-col items-center gap-2 flex-1 px-1" data-slide-index="5" style="--step-color:#a3a3a3" aria-label="Ke bagian Testing & QA">
+                    <span class="stepper-dot w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-neutral-400/40 flex items-center justify-center">
+                        <i class="fa-solid fa-vial text-neutral-400 text-sm"></i>
+                    </span>
+                    <span class="stepper-label text-[10px] md:text-xs font-medium text-gray-500 transition-colors leading-tight text-center">Testing</span>
+                </button>
+                </div>
+
+                <!-- Lanjut (flanks the step icons on the right) -->
+                <button id="btn-slide-next" type="button" class="shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-r from-primary via-secondary to-accent text-black shadow-[0_10px_30px_-8px_rgba(255,255,255,0.25)] hover:shadow-[0_15px_40px_-8px_rgba(255,255,255,0.35)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center" aria-label="Lanjut ke langkah berikutnya">
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+            </div>
+
+            <div class="text-center mt-3">
+                <span id="slide-position-label" class="text-xs text-gray-500 font-medium tracking-wide">1 / 6</span>
+            </div>
+        </div>
+
+        <!-- Slides Viewport -->
+        <div id="slides-viewport" class="relative">
+
+        <!-- 1. PRD Section -->
+        <section id="prd" class="slide-panel slide-active relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-neutral-300/10 border border-neutral-300/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-file-lines text-neutral-300 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">1. Planning & PRD (Claude)</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Product Requirements Document adalah fondasi. Gunakan AI untuk mempercepat perumusan.</p>
+            
+            <div class="flex flex-col gap-4">
+                <!-- Task PRD 1 -->
+                <label class="task-container flex items-start gap-4 p-5 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-prd-1" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">Pembuatan Manual</h4>
+                        <p class="text-sm text-gray-400 mt-1 task-desc">Jelaskan visi, misi, target user, dan daftar fitur utama secara rinci. Biarkan Claude menstrukturkannya menjadi dokumen PRD standar.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-prd-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-prd-1');" aria-label="Lihat detail proses task-prd-1"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task PRD 2 -->
+                <label class="task-container flex items-start gap-4 p-5 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-prd-2" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">Cloning Ref Link Website Lain</h4>
+                        <p class="text-sm text-gray-400 mt-1 task-desc">Berikan URL referensi kompetitor. Prompt: <i>"Analisis website [URL], dan buatkan PRD untuk membuat versi yang lebih baik dengan tambahan fitur khusus."</i></p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-prd-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-prd-2');" aria-label="Lihat detail proses task-prd-2"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+            </div>
+        </section>
+
+        <!-- 2. Front End Section -->
+        <section id="frontend" class="slide-panel slide-next relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-neutral-400/10 border border-neutral-400/30 flex items-center justify-center shrink-0">
+                    <i class="fa-brands fa-react text-neutral-400 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">2. Front-End (Claude/Gemini)</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Menerjemahkan PRD menjadi antarmuka visual. Gunakan AI untuk generate boilerplate code & komponen.</p>
+            
+            <div class="flex flex-col gap-3">
+                <!-- Task FE 1 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-1" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">1. UI/UX</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Tentukan Wireframing & Design System (Warna primer, sekunder, dan Spasi).</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-1');" aria-label="Lihat detail proses task-fe-1"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 2 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-2" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">2. Header</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Buat Navigasi Utama yang responsif (Hamburger menu di mobile).</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-2');" aria-label="Lihat detail proses task-fe-2"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 3 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-3" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">3. Title / Hero</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Rancang Hero section dengan Headline yang memikat dan CTA jelas.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-3" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-3');" aria-label="Lihat detail proses task-fe-3"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 4 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-4" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">4. Layout</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Implementasi Grid System, Container, dan Card components.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-4" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-4');" aria-label="Lihat detail proses task-fe-4"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 5 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-5" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">5. Fitur Utama</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Bangun komponen interaktif inti sesuai PRD (Tabel, Form, Grafik).</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-5" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-5');" aria-label="Lihat detail proses task-fe-5"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 6 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-6" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">6. Typography</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Atur hierarki font (H1-H6) dan pastikan readability tinggi.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-6" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-6');" aria-label="Lihat detail proses task-fe-6"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 7 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-7" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">7. Animasi</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Tambahkan micro-interactions (Hover efek, framer-motion/CSS transition).</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-7" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-7');" aria-label="Lihat detail proses task-fe-7"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Task FE 8 -->
+                <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-fe-8" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">8. Footer</h4>
+                        <p class="text-xs text-gray-400 mt-1 task-desc">Desain footer dengan link navigasi pelengkap dan informasi hak cipta.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-8" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-8');" aria-label="Lihat detail proses task-fe-8"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <!-- Special Pages -->
+                <div class="pt-4 mt-2 border-t border-white/5">
+                    <span class="text-xs font-bold text-red-400 uppercase tracking-wider mb-3 block"><i class="fa-solid fa-eye-slash mr-1"></i> Halaman Khusus (Hide Header/Footer)</span>
+                    
+                    <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer mb-3 border-l-2 border-l-red-500/50">
+                        <input type="checkbox" id="task-fe-9" class="task-checkbox hidden">
+                        <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title font-medium text-gray-200 transition-all duration-300">9. Login Page</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Desain form autentikasi bersih, fokus tanpa gangguan navigasi utama.</p>
+                        </div>
+                    
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-9" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-9');" aria-label="Lihat detail proses task-fe-9"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer mb-3 border-l-2 border-l-red-500/50">
+                        <input type="checkbox" id="task-fe-10" class="task-checkbox hidden">
+                        <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title font-medium text-gray-200 transition-all duration-300">10. Profil Client</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Dashboard user dengan navigasi sidebar mandiri setelah login.</p>
+                        </div>
+                    
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-10" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-10');" aria-label="Lihat detail proses task-fe-10"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-4 p-4 rounded-xl glass-panel cursor-pointer border-l-2 border-l-red-500/50">
+                        <input type="checkbox" id="task-fe-11" class="task-checkbox hidden">
+                        <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title font-medium text-gray-200 transition-all duration-300">11. CMS Admin</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Panel admin terpisah untuk manajemen data, dengan table & form CRUD.</p>
+                        </div>
+                    
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-fe-11" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-fe-11');" aria-label="Lihat detail proses task-fe-11"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Backend Section -->
+        <section id="backend" class="slide-panel slide-next relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-neutral-300/10 border border-neutral-300/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-database text-neutral-300 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">3. Backend (PostgreSQL / Supabase)</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Gunakan BaaS (Backend as a Service) untuk mempercepat arsitektur data tanpa setup server manual.</p>
+            
+            <div class="flex flex-col gap-4">
+                <label class="task-container flex items-start gap-4 p-5 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-be-1" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">1. Setup Authentication</h4>
+                        <p class="text-sm text-gray-400 mt-1 task-desc">Aktifkan Email/Password atau OAuth (Google/Github). Supabase otomatis menyimpan user di <code class="bg-black/50 px-1 rounded text-neutral-300 text-xs">auth.users</code>.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-be-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-be-1');" aria-label="Lihat detail proses task-be-1"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+
+                <label class="task-container flex items-start gap-4 p-5 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-be-2" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">2. Desain Database PostgreSQL</h4>
+                        <p class="text-sm text-gray-400 mt-1 task-desc">Buat tabel relasional (contoh: <code class="text-xs">public.profiles</code>). Terapkan <b>RLS (Row Level Security)</b> agar data user aman dari akses tak sah.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-be-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-be-2');" aria-label="Lihat detail proses task-be-2"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+                
+                <label class="task-container flex items-start gap-4 p-5 rounded-xl glass-panel cursor-pointer">
+                    <input type="checkbox" id="task-be-3" class="task-checkbox hidden">
+                    <div class="w-6 h-6 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                        <i class="fa-solid fa-check text-white text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="task-title font-medium text-gray-200 transition-all duration-300">3. Konfigurasi Storage</h4>
+                        <p class="text-sm text-gray-400 mt-1 task-desc">Siapkan Bucket (mirip AWS S3) untuk menyimpan file aset, foto profil user, atau media CMS.</p>
+                    </div>
+                
+                        <button type="button" class="task-detail-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-be-3" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-be-3');" aria-label="Lihat detail proses task-be-3"><i class="fa-solid fa-circle-info text-base"></i></button>
+                    </label>
+            </div>
+        </section>
+
+        <!-- 4. Integration -->
+        <section id="integration" class="slide-panel slide-next relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-neutral-500/10 border border-neutral-500/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-plug text-neutral-500 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">4. Integrasi</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Hubungkan front-end dengan backend menggunakan SDK dan kelola state secara global.</p>
+                
+                <div class="flex flex-col gap-3">
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-int-1" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">Install & Init Supabase SDK</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Integrasi SDK dan siapkan client utama.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-int-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-int-1');" aria-label="Lihat detail proses task-int-1"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+                    
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-int-2" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">Set Environment Variables (.env)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Amankan API key dan URL pada konfigurasi lokal.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-int-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-int-2');" aria-label="Lihat detail proses task-int-2"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-int-3" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">Global State (Zustand/Context) Auth</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Atur state sesi pengguna agar sinkron di seluruh komponen.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-int-3" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-int-3');" aria-label="Lihat detail proses task-int-3"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+                </div>
+        </section>
+
+        <!-- 5. Deployment -->
+        <section id="deploy" class="slide-panel slide-next relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-rocket text-white text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">5. Deployment</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Luncurkan website ke server produksi dengan environment yang benar.</p>
+                
+                <div class="flex flex-col gap-3">
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-dep-1" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">Deploy Serverless (Vercel)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Hubungkan repository dan aktifkan auto-deployment.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-dep-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-dep-1');" aria-label="Lihat detail proses task-dep-1"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+                    
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-dep-2" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">Setup Domain Custom (Opsional)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Arahkan DNS untuk menggunakan alamat branding unik.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-dep-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-dep-2');" aria-label="Lihat detail proses task-dep-2"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+                </div>
+        </section>
+
+        <!-- 6. Testing & QA Section -->
+        <section id="testing" class="slide-panel slide-next relative z-10 pb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-neutral-400/10 border border-neutral-400/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-vial text-neutral-400 text-sm"></i>
+                </div>
+                <h2 class="text-2xl font-bold">6. Testing & QA</h2>
+            </div>
+            <p class="text-gray-400 mb-6 text-sm">Pastikan semua fitur, tampilan, dan keamanan sudah teruji sebelum dan sesudah go-live.</p>
+
+                <div class="flex flex-col gap-3">
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-1" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">1. Audit Google Lighthouse (>90)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Periksa rasio kecepatan, aksesibilitas, dan praktik terbaik.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-1" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-1');" aria-label="Lihat detail proses task-tst-1"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-2" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">2. Uji Fungsional End-to-End</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Jalankan seluruh alur utama (login, CRUD, form) sesuai daftar fitur di PRD.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-2" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-2');" aria-label="Lihat detail proses task-tst-2"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-3" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">3. Uji Responsif Multi-Device</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Cek tampilan di mobile, tablet, dan desktop pada beberapa ukuran layar.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-3" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-3');" aria-label="Lihat detail proses task-tst-3"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-4" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">4. Uji Lintas Browser</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Pastikan tampilan dan fungsi konsisten di Chrome, Safari, Firefox, dan Edge.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-4" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-4');" aria-label="Lihat detail proses task-tst-4"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-5" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">5. Uji Keamanan Dasar</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Cek RLS Supabase, kebocoran env variable, dan validasi input form.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-5" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-5');" aria-label="Lihat detail proses task-tst-5"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-6" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">6. Uji Aksesibilitas (a11y)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Kontras warna, navigasi keyboard, dan alt text untuk gambar.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-6" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-6');" aria-label="Lihat detail proses task-tst-6"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+
+                    <label class="task-container flex items-center gap-3 p-3 rounded-xl glass-panel cursor-pointer">
+                        <input type="checkbox" id="task-tst-7" class="task-checkbox hidden">
+                        <div class="w-5 h-5 rounded border-2 border-gray-500 flex items-center justify-center shrink-0 transition-colors">
+                            <i class="fa-solid fa-check text-white text-[10px] opacity-0 transition-opacity"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="task-title text-sm font-medium text-gray-200 transition-all duration-300">7. User Acceptance Testing (UAT)</h4>
+                            <p class="text-xs text-gray-400 mt-1 task-desc">Minta 2-3 orang di luar tim mencoba website dan kumpulkan feedback.</p>
+                        </div>
+                        <button type="button" class="task-detail-btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-all duration-300 self-center" data-task="task-tst-7" onclick="event.preventDefault(); event.stopPropagation(); openTaskModal('task-tst-7');" aria-label="Lihat detail proses task-tst-7"><i class="fa-solid fa-circle-info text-sm"></i></button>
+                    </label>
+                </div>
+        </section>
+
+        </div><!-- /#slides-viewport -->
+
+    </div>
+
+    <!-- Floating Progress Tracker -->
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50">
+        <div class="glass-panel p-4 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] border-white/20">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin text-primary" id="progress-spinner"></i>
+                        Progres Proyek
+                    </h3>
+                </div>
+                <span id="progress-text" class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">0 / 22 Selesai</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-primary via-secondary to-accent transition-all duration-500 ease-out" style="width: 0%;"></div>
+            </div>
+            
+            <!-- Congratulation Message (Hidden by default) -->
+            <div id="congrats-msg" class="hidden mt-3 text-center text-xs text-white font-medium animate-fade-in-up">
+                <i class="fa-solid fa-party-horn mr-1"></i> Luar biasa! Semua proses telah selesai!
+            </div>
+        </div>
+    </div>
+
+    </div><!-- /#screen-app -->
+
+    <!-- Task Detail Modal -->
+    <div id="task-modal-overlay" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div id="task-modal-box" class="glass-panel bg-card/95 max-w-lg w-full rounded-2xl p-6 md:p-8 relative border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] max-h-[85vh] overflow-y-auto">
+            <button type="button" onclick="closeTaskModal()" class="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors" aria-label="Tutup">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4 pr-8">
+                <div id="task-modal-icon" class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-circle-info text-black"></i>
+                </div>
+                <div>
+                    <span id="task-modal-category" class="text-[11px] font-bold text-primary uppercase tracking-wider"></span>
+                    <h3 id="task-modal-title" class="text-lg font-bold text-white leading-tight"></h3>
+                </div>
+            </div>
+            <div id="task-modal-body" class="text-sm text-gray-300 leading-relaxed space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA PENJELASAN DETAIL SETIAP PROSES ---
+        const taskDetails = {
+            'task-prd-1': {
+                category: '1. Planning & PRD',
+                icon: 'fa-solid fa-pen-nib',
+                title: 'Pembuatan Manual',
+                detail: `
+                    <p>Cara ini mengharuskan kamu menuliskan sendiri kebutuhan proyek secara rinci sebelum diserahkan ke AI untuk dirapikan menjadi dokumen PRD yang terstruktur.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tulis latar belakang masalah dan tujuan proyek.</li>
+                        <li>Definisikan target pengguna / persona.</li>
+                        <li>Buat daftar fitur wajib (must-have) dan fitur tambahan (nice-to-have).</li>
+                        <li>Susun alur pengguna (user flow) secara singkat.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Berikut catatan kasar kebutuhan produk saya: [tempel catatan]. Rapikan menjadi dokumen PRD standar dengan bagian tujuan, target user, fitur, dan batasan proyek."</p>
+                `
+            },
+            'task-prd-2': {
+                category: '1. Planning & PRD',
+                icon: 'fa-solid fa-link',
+                title: 'Cloning Ref Link Website Lain',
+                detail: `
+                    <p>Gunakan website kompetitor atau referensi sebagai titik awal riset agar proses perumusan kebutuhan jauh lebih cepat, tanpa harus memulai dari nol.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Kumpulkan 2-3 URL website kompetitor atau inspirasi.</li>
+                        <li>Minta AI menganalisis struktur halaman, alur, dan fitur utamanya.</li>
+                        <li>Minta AI mengusulkan diferensiasi atau fitur tambahan.</li>
+                    </ul>
+                    <p><b>Peringatan:</b> gunakan hasil analisis sebagai inspirasi, bukan untuk meniru identik desain, teks, atau branding milik orang lain.</p>
+                `
+            },
+            'task-fe-1': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-swatchbook',
+                title: '1. UI/UX',
+                detail: `
+                    <p>Tahap ini menentukan fondasi visual seluruh website: wireframe kasar tiap halaman dan design system (warna primer/sekunder, skala spasi, tipografi dasar, dan komponen inti seperti tombol, input, dan card).</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tentukan satu warna primer, satu warna aksen, dan warna netral pendukung.</li>
+                        <li>Gunakan skala spasi konsisten (kelipatan 4px atau 8px) untuk margin & padding.</li>
+                        <li>Rancang komponen dasar reusable: button, input, card, dan badge.</li>
+                        <li>Sketsa wireframe kasar tiap halaman utama sebelum mulai coding.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan design system sederhana untuk website [jenis website]: palet warna (primary, secondary, neutral), skala spasi, dan style dasar untuk button, input, dan card menggunakan Tailwind CSS."</p>
+                `
+            },
+            'task-fe-2': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-bars',
+                title: '2. Header',
+                detail: `
+                    <p>Header berisi navigasi utama situs. Pastikan responsif: menampilkan menu horizontal di desktop dan berubah menjadi hamburger menu di layar mobile.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tempatkan logo/branding di kiri, tautan navigasi di tengah atau kanan.</li>
+                        <li>Buat CTA button (misal "Daftar"/"Login") yang menonjol di sisi kanan.</li>
+                        <li>Buat versi mobile dengan hamburger menu yang membuka drawer/overlay.</li>
+                        <li>Pertimbangkan header sticky agar navigasi mudah diakses saat scroll.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan komponen Header responsif dengan React + Tailwind: logo di kiri, menu navigasi [daftar menu] di tengah, tombol CTA '[teks]' di kanan, dan hamburger menu saat mobile."</p>
+                `
+            },
+            'task-fe-3': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-star',
+                title: '3. Title / Hero',
+                detail: `
+                    <p>Hero section adalah kesan pertama pengunjung. Harus berisi headline yang jelas menjelaskan value proposition, sub-headline pendukung, serta CTA (call-to-action) yang mengarahkan pengguna ke tindakan berikutnya.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tulis headline singkat yang langsung menjelaskan value proposition utama.</li>
+                        <li>Tambahkan sub-headline pendukung 1-2 kalimat.</li>
+                        <li>Sertakan satu CTA button utama dengan tujuan yang jelas.</li>
+                        <li>Tambahkan visual pendukung (ilustrasi, screenshot, atau mockup produk).</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan copy Hero section untuk landing page [nama produk]: headline menarik, sub-headline pendukung, dan teks CTA button yang persuasif."</p>
+                `
+            },
+            'task-fe-4': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-table-cells-large',
+                title: '4. Layout',
+                detail: `
+                    <p>Implementasikan sistem grid (umumnya 12 kolom), container dengan lebar maksimum yang konsisten, serta komponen card yang dapat dipakai ulang di berbagai halaman.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tentukan lebar container maksimum (misal <code class="text-xs">max-w-7xl</code>) dan padding konsisten.</li>
+                        <li>Terapkan grid system untuk menyusun konten secara rapi.</li>
+                        <li>Buat komponen Card reusable dengan beberapa varian (dengan/tanpa gambar).</li>
+                        <li>Uji tampilan di breakpoint mobile, tablet, dan desktop.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan komponen Card reusable dengan Tailwind CSS yang responsif, mendukung gambar opsional, judul, deskripsi singkat, dan tombol aksi."</p>
+                `
+            },
+            'task-fe-5': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-cubes',
+                title: '5. Fitur Utama',
+                detail: `
+                    <p>Bangun komponen interaktif inti sesuai daftar fitur di PRD, misalnya tabel data, form input, grafik/chart, atau fitur pencarian.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buka kembali daftar fitur di PRD, urutkan berdasarkan prioritas.</li>
+                        <li>Bangun satu per satu komponen interaktif inti (tabel, form, grafik, pencarian).</li>
+                        <li>Sertakan state loading, empty state, dan error state pada tiap komponen.</li>
+                        <li>Hubungkan dulu ke data dummy sebelum integrasi ke backend asli.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan komponen tabel data React dengan Tailwind yang mendukung sorting, pagination, state loading (skeleton), dan empty state jika data kosong."</p>
+                `
+            },
+            'task-fe-6': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-font',
+                title: '6. Typography',
+                detail: `
+                    <p>Tentukan hierarki font dari H1 hingga H6 beserta body text, termasuk ukuran, line-height, dan font-weight masing-masing level.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Tentukan font family utama (dan font sekunder jika perlu).</li>
+                        <li>Atur skala ukuran H1-H6 dan body text secara konsisten.</li>
+                        <li>Gunakan line-height nyaman baca, umumnya 1.4-1.6 untuk body text.</li>
+                        <li>Cek kontras warna teks terhadap background sesuai standar WCAG AA.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan skala tipografi Tailwind (H1-H6, body, caption) untuk website [jenis website] dengan font '[nama font]', pastikan hierarkinya jelas dan mudah dibaca."</p>
+                `
+            },
+            'task-fe-7': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-wand-magic-sparkles',
+                title: '7. Animasi',
+                detail: `
+                    <p>Tambahkan micro-interaction seperti efek hover, transisi perpindahan state, atau animasi saat elemen muncul di layar, menggunakan CSS transition atau library seperti Framer Motion.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Identifikasi elemen yang butuh micro-interaction (tombol, card hover, modal).</li>
+                        <li>Gunakan CSS transition untuk animasi ringan, Framer Motion untuk yang kompleks.</li>
+                        <li>Tambahkan animasi saat elemen muncul di layar (fade in, slide up).</li>
+                        <li>Uji performa; hindari animasi berlebihan yang membuat halaman terasa berat.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Tambahkan micro-interaction hover dan animasi fade-in-up menggunakan Framer Motion pada komponen berikut: [tempel kode komponen]."</p>
+                `
+            },
+            'task-fe-8': {
+                category: '2. Front-End',
+                icon: 'fa-solid fa-shoe-prints',
+                title: '8. Footer',
+                detail: `
+                    <p>Footer berisi link navigasi pelengkap (bukan navigasi utama), tautan media sosial, informasi kontak, dan baris hak cipta.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Susun kolom info: tentang situs, tautan cepat, kontak, dan sosial media.</li>
+                        <li>Tambahkan baris copyright dengan tahun berjalan.</li>
+                        <li>Sertakan link ke halaman legal (Privacy Policy, Terms) bila relevan.</li>
+                        <li>Opsional: tambahkan form berlangganan newsletter singkat.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan komponen Footer responsif dengan Tailwind CSS berisi 4 kolom (tentang, tautan cepat, kontak, sosial media) dan baris copyright di bagian bawah."</p>
+                `
+            },
+            'task-fe-9': {
+                category: '2. Front-End — Halaman Khusus',
+                icon: 'fa-solid fa-right-to-bracket',
+                title: '9. Login Page',
+                detail: `
+                    <p>Halaman autentikasi sebaiknya didesain bersih dan fokus pada satu tugas: login atau registrasi, tanpa gangguan navigasi utama (header/footer situs disembunyikan).</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Sembunyikan header/footer utama, fokuskan layout pada form.</li>
+                        <li>Buat validasi real-time (format email, panjang password, dll).</li>
+                        <li>Tampilkan pesan error yang jelas dan spesifik per field.</li>
+                        <li>Sertakan tautan "Lupa Password" dan "Daftar akun baru".</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan halaman Login dengan React + Tailwind: form email & password dengan validasi real-time, pesan error jelas, serta tautan lupa password dan daftar akun baru."</p>
+                `
+            },
+            'task-fe-10': {
+                category: '2. Front-End — Halaman Khusus',
+                icon: 'fa-solid fa-user',
+                title: '10. Profil Client',
+                detail: `
+                    <p>Dashboard khusus pengguna yang sudah login, biasanya memiliki navigasi sidebar mandiri (terpisah dari header publik) untuk mengelola profil, riwayat, dan pengaturan akun.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buat sidebar navigasi mandiri untuk menu dashboard (Profil, Riwayat, Pengaturan).</li>
+                        <li>Tampilkan ringkasan data penting di bagian atas dashboard.</li>
+                        <li>Sediakan halaman edit profil lengkap dengan validasi input.</li>
+                        <li>Pastikan area ini hanya bisa diakses setelah login (protected route).</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan layout Dashboard Profil User dengan sidebar navigasi (Profil, Riwayat, Pengaturan) dan area konten utama menampilkan ringkasan data pengguna."</p>
+                `
+            },
+            'task-fe-11': {
+                category: '2. Front-End — Halaman Khusus',
+                icon: 'fa-solid fa-user-shield',
+                title: '11. CMS Admin',
+                detail: `
+                    <p>Panel admin terpisah untuk mengelola data situs, umumnya berisi tabel data dengan aksi CRUD (Create, Read, Update, Delete) serta form untuk menambah/mengubah konten.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buat sidebar khusus admin, terpisah dari sidebar client biasa.</li>
+                        <li>Bangun tabel data dengan aksi Create, Read, Update, Delete.</li>
+                        <li>Sertakan modal atau halaman terpisah untuk tambah & edit data.</li>
+                        <li>Batasi akses berdasarkan role di sisi backend, bukan hanya di UI.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan halaman CMS Admin dengan tabel data (kolom: [sebutkan kolom]), tombol Tambah/Edit/Hapus, dan modal form untuk input data baru."</p>
+                `
+            },
+            'task-be-1': {
+                category: '3. Backend',
+                icon: 'fa-solid fa-key',
+                title: '1. Setup Authentication',
+                detail: `
+                    <p>Aktifkan metode autentikasi yang dibutuhkan (Email/Password, atau OAuth seperti Google/Github) melalui dashboard Supabase. Supabase secara otomatis akan menyimpan data pengguna yang terdaftar di tabel bawaan <code class="bg-black/50 px-1 rounded text-neutral-300 text-xs">auth.users</code>, sehingga kamu tidak perlu membuat sistem autentikasi dari nol.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Aktifkan provider Email/Password dan/atau OAuth (Google/Github) di dashboard.</li>
+                        <li>Atur redirect URL untuk konfirmasi email dan reset password sesuai domain aplikasimu.</li>
+                        <li>Uji alur registrasi, login, dan lupa password secara menyeluruh.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan fungsi signUp, signIn, dan signOut menggunakan Supabase JS client untuk project Next.js, lengkap dengan penanganan error dasar."</p>
+                `
+            },
+            'task-be-2': {
+                category: '3. Backend',
+                icon: 'fa-solid fa-diagram-project',
+                title: '2. Desain Database PostgreSQL',
+                detail: `
+                    <p>Rancang tabel-tabel relasional beserta relasinya (contoh: tabel <code class="text-xs">public.profiles</code> yang terhubung ke <code class="text-xs">auth.users</code>). Terapkan <b>RLS (Row Level Security)</b> pada setiap tabel agar setiap pengguna hanya bisa mengakses atau mengubah data miliknya sendiri — ini krusial untuk keamanan data di Supabase.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Gambar skema relasi (ERD) sebelum membuat tabel agar struktur foreign key jelas.</li>
+                        <li>Buat tabel beserta relasinya (foreign key ke <code class="text-xs">auth.users</code> bila perlu).</li>
+                        <li>Aktifkan dan tulis policy RLS untuk setiap tabel yang menyimpan data pengguna.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan skema tabel PostgreSQL untuk fitur [nama fitur] beserta contoh RLS policy di Supabase agar user hanya bisa mengakses datanya sendiri."</p>
+                `
+            },
+            'task-be-3': {
+                category: '3. Backend',
+                icon: 'fa-solid fa-box-archive',
+                title: '3. Konfigurasi Storage',
+                detail: `
+                    <p>Siapkan bucket penyimpanan file (mirip AWS S3) untuk menyimpan aset seperti foto profil pengguna atau media konten CMS.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buat bucket baru dan tentukan apakah bersifat public atau private.</li>
+                        <li>Buat policy akses file (upload/download) sesuai kebutuhan role pengguna.</li>
+                        <li>Batasi ukuran dan tipe file yang boleh diunggah untuk mencegah penyalahgunaan.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan fungsi upload foto profil ke Supabase Storage bucket 'avatars' dari React, termasuk validasi ukuran dan tipe file sebelum upload."</p>
+                `
+            },
+            'task-int-1': {
+                category: '4. Integrasi',
+                icon: 'fa-solid fa-plug',
+                title: 'Install & Init Supabase SDK',
+                detail: `
+                    <p>Pasang package SDK Supabase melalui package manager (npm/yarn/pnpm), lalu buat satu instance client Supabase yang bisa dipakai ulang di seluruh aplikasi.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Install package resmi, misal <code class="text-xs">npm install @supabase/supabase-js</code>.</li>
+                        <li>Buat file khusus (misal <code class="text-xs">lib/supabase.js</code>) untuk inisialisasi client.</li>
+                        <li>Ekspor instance client agar bisa diimpor di komponen manapun.</li>
+                        <li>Uji koneksi dengan query sederhana (misal ambil satu baris data).</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan file lib/supabase.js untuk inisialisasi Supabase client di project Next.js, menggunakan environment variable untuk URL dan anon key."</p>
+                `
+            },
+            'task-int-2': {
+                category: '4. Integrasi',
+                icon: 'fa-solid fa-lock',
+                title: 'Set Environment Variables (.env)',
+                detail: `
+                    <p>Simpan URL project dan anon key Supabase sebagai environment variable di file <code class="text-xs">.env</code>, jangan menuliskannya langsung di kode (hardcode).</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Salin Project URL dan anon/public key dari dashboard Supabase.</li>
+                        <li>Simpan sebagai variable di file <code class="text-xs">.env</code> (misal <code class="text-xs">NEXT_PUBLIC_SUPABASE_URL</code>).</li>
+                        <li>Tambahkan <code class="text-xs">.env</code> ke <code class="text-xs">.gitignore</code> agar tidak ter-commit ke repository publik.</li>
+                        <li>Gunakan nilai berbeda untuk environment development dan production.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan template file .env.example untuk project Next.js + Supabase, lengkap dengan komentar penjelasan tiap variable."</p>
+                `
+            },
+            'task-int-3': {
+                category: '4. Integrasi',
+                icon: 'fa-solid fa-arrows-spin',
+                title: 'Global State (Zustand/Context) Auth',
+                detail: `
+                    <p>Gunakan state management global (Zustand, Redux, atau Context API) untuk menyimpan status sesi pengguna (login/tidak) agar bisa diakses dari komponen manapun tanpa prop-drilling.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Pilih tools (Zustand, Redux, atau Context API) sesuai kebutuhan proyek.</li>
+                        <li>Buat store yang menyimpan data user dan status login.</li>
+                        <li>Pasang listener perubahan status autentikasi dari Supabase agar tetap sinkron.</li>
+                        <li>Buat komponen Protected Route yang redirect ke halaman login bila belum autentikasi.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Buatkan store Zustand untuk auth state (user, isLoading, isLoggedIn) yang otomatis sinkron dengan Supabase onAuthStateChange."</p>
+                `
+            },
+            'task-dep-1': {
+                category: '5. Deployment',
+                icon: 'fa-solid fa-rocket',
+                title: 'Deploy Serverless (Vercel)',
+                detail: `
+                    <p>Hubungkan repository Git proyekmu ke Vercel, lalu atur environment variable yang sama seperti di file <code class="text-xs">.env</code> lokal melalui dashboard Vercel.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Push kode ke repository Git (GitHub/GitLab/Bitbucket).</li>
+                        <li>Import repository tersebut ke dashboard Vercel.</li>
+                        <li>Salin ulang environment variable dari <code class="text-xs">.env</code> lokal ke dashboard Vercel.</li>
+                        <li>Deploy dan cek preview URL sebelum mempromosikan ke production.</li>
+                    </ul>
+                    <p><b>Keuntungan:</b> setiap kali ada push ke branch utama, Vercel akan otomatis melakukan build & deploy ulang (CI/CD) tanpa konfigurasi server manual.</p>
+                `
+            },
+            'task-dep-2': {
+                category: '5. Deployment',
+                icon: 'fa-solid fa-globe',
+                title: 'Setup Domain Custom (Opsional)',
+                detail: `
+                    <p>Tambahkan domain milikmu di dashboard Vercel, lalu arahkan DNS domain tersebut (biasanya record A atau CNAME) sesuai instruksi yang diberikan Vercel.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Pastikan domain sudah dibeli/dimiliki dari registrar (misal Niagahoster, Namecheap).</li>
+                        <li>Tambahkan domain di dashboard Vercel &gt; Settings &gt; Domains.</li>
+                        <li>Update DNS record (A/CNAME) sesuai instruksi Vercel di panel registrar.</li>
+                        <li>Tunggu propagasi DNS lalu pastikan status domain "Valid".</li>
+                    </ul>
+                    <p><b>Catatan:</b> propagasi DNS bisa memakan waktu beberapa menit hingga jam, dan sertifikat SSL akan diterbitkan otomatis oleh Vercel setelah domain terverifikasi.</p>
+                `
+            },
+            'task-tst-1': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-gauge-high',
+                title: 'Audit Google Lighthouse (>90)',
+                detail: `
+                    <p>Jalankan audit Lighthouse (melalui Chrome DevTools atau PageSpeed Insights) untuk menilai empat aspek: Performance, Accessibility, Best Practices, dan SEO.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buka Chrome DevTools &gt; tab Lighthouse, atau gunakan PageSpeed Insights.</li>
+                        <li>Jalankan audit untuk kategori Performance, Accessibility, Best Practices, dan SEO.</li>
+                        <li>Catat rekomendasi perbaikan yang diberikan (misal ukuran gambar, lazy load).</li>
+                        <li>Perbaiki satu per satu lalu jalankan ulang audit hingga skor di atas 90.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Berikut hasil audit Lighthouse saya: [tempel hasil]. Jelaskan rekomendasi paling prioritas untuk saya perbaiki beserta urutan pengerjaannya."</p>
+                `
+            },
+            'task-tst-2': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-list-check',
+                title: 'Uji Fungsional End-to-End',
+                detail: `
+                    <p>Telusuri kembali daftar fitur di PRD, lalu jalankan sendiri setiap alur penting dari sudut pandang pengguna, bukan hanya membaca kode.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buat daftar "user flow" utama: registrasi, login, isi form, checkout/submit, logout.</li>
+                        <li>Jalankan tiap flow dari awal sampai akhir, termasuk kondisi gagal (misal password salah, koneksi terputus).</li>
+                        <li>Cek pesan error muncul dengan jelas dan tidak membingungkan user.</li>
+                        <li>Uji juga skenario data kosong (empty state) dan data yang sangat panjang.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Berdasarkan PRD ini: [tempel ringkasan fitur], buatkan daftar test case end-to-end yang perlu saya coba manual sebelum rilis."</p>
+                `
+            },
+            'task-tst-3': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-mobile-screen',
+                title: 'Uji Responsif Multi-Device',
+                detail: `
+                    <p>Pastikan tampilan tetap rapi di berbagai ukuran layar, bukan cuma terlihat bagus di layar laptop developer.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Buka Chrome DevTools &gt; Device Toolbar, cek breakpoint mobile (375px), tablet (768px), dan desktop (1280px+).</li>
+                        <li>Perhatikan elemen yang terpotong, bertumpuk, atau teks yang overflow di layar sempit.</li>
+                        <li>Cek juga orientasi landscape di HP/tablet.</li>
+                        <li>Jika memungkinkan, coba di device fisik asli (bukan hanya emulator).</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Ini screenshot tampilan mobile saya: [lampirkan]. Ada bagian yang terlihat rusak/tumpang tindih, tolong identifikasi penyebabnya di CSS."</p>
+                `
+            },
+            'task-tst-4': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-globe',
+                title: 'Uji Lintas Browser',
+                detail: `
+                    <p>Beberapa CSS/JS modern tidak selalu didukung sama di semua browser. Cek konsistensi tampilan dan fungsi minimal di browser-browser populer.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Uji minimal di Chrome, Firefox, Safari, dan Edge (Safari penting untuk pengguna iOS).</li>
+                        <li>Perhatikan elemen dengan animasi CSS, backdrop-filter, atau font kustom.</li>
+                        <li>Cek juga versi Safari di iPhone karena sering berbeda perilaku dari desktop.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Fitur CSS ini [sebutkan, misal backdrop-filter/mask] mau saya pakai, browser mana saja yang belum full support dan apa fallback amannya?"</p>
+                `
+            },
+            'task-tst-5': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-shield-halved',
+                title: 'Uji Keamanan Dasar',
+                detail: `
+                    <p>Lakukan pengecekan keamanan tingkat dasar sebelum go-live, khususnya seputar data user dan environment variable.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Pastikan Row Level Security (RLS) aktif di semua tabel Supabase yang menyimpan data sensitif.</li>
+                        <li>Cek tidak ada API key rahasia (service role key) yang ter-expose ke kode frontend/browser.</li>
+                        <li>Uji validasi input form (mencegah input kosong, format salah, atau karakter berbahaya).</li>
+                        <li>Coba akses halaman/API yang seharusnya butuh login tanpa login, pastikan ditolak.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Berikut struktur tabel Supabase saya: [tempel skema]. Review apakah policy RLS saya sudah aman dari akses data user lain."</p>
+                `
+            },
+            'task-tst-6': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-universal-access',
+                title: 'Uji Aksesibilitas (a11y)',
+                detail: `
+                    <p>Pastikan website tetap bisa digunakan oleh pengguna dengan keterbatasan penglihatan atau yang mengandalkan keyboard/screen reader.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Cek kontras warna teks terhadap background (idealnya rasio minimal 4.5:1).</li>
+                        <li>Coba navigasi seluruh halaman hanya dengan tombol Tab di keyboard.</li>
+                        <li>Pastikan semua gambar penting punya atribut <code class="text-xs">alt</code> yang deskriptif.</li>
+                        <li>Pastikan label form terhubung dengan input-nya (bukan hanya placeholder).</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Review kode komponen form ini dari sisi aksesibilitas (a11y), dan perbaiki bagian yang kurang ramah screen reader."</p>
+                `
+            },
+            'task-tst-7': {
+                category: '6. Testing & QA',
+                icon: 'fa-solid fa-users',
+                title: 'User Acceptance Testing (UAT)',
+                detail: `
+                    <p>Sebelum benar-benar go-live, minta orang di luar tim (calon target user) mencoba produk secara langsung — mereka sering menemukan hal yang terlewat oleh developer.</p>
+                    <p><b>Langkah yang disarankan:</b></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Pilih 2-3 orang yang representatif dengan target pengguna (bukan sesama developer).</li>
+                        <li>Beri mereka skenario/tugas konkret (misal: "coba daftar akun lalu buat 1 pesanan").</li>
+                        <li>Amati langsung tanpa banyak membantu, catat di mana mereka bingung atau tersendat.</li>
+                        <li>Kumpulkan feedback, prioritaskan perbaikan yang paling sering ditemui.</li>
+                    </ul>
+                    <p><b>Contoh prompt:</b> "Berikut kumpulan feedback dari user testing saya: [tempel catatan]. Kelompokkan berdasarkan prioritas (bug kritis, UX membingungkan, saran minor)."</p>
+                `
+            }
+        };
+
+        function openTaskModal(id) {
+            const data = taskDetails[id];
+            if (!data) return;
+            document.getElementById('task-modal-category').innerText = data.category;
+            document.getElementById('task-modal-title').innerText = data.title;
+            document.getElementById('task-modal-body').innerHTML = data.detail;
+            document.getElementById('task-modal-icon').innerHTML = `<i class="${data.icon} text-white"></i>`;
+            const overlay = document.getElementById('task-modal-overlay');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal-overlay').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('task-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'task-modal-overlay') closeTaskModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeTaskModal();
+        });
+    </script>
+
+    <!-- ============================= -->
+    <!-- SLIDE-PER-PAGE NAVIGATION     -->
+    <!-- ============================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slidePanels = Array.from(document.querySelectorAll('.slide-panel'));
+            const stepperItems = Array.from(document.querySelectorAll('.stepper-item'));
+            const btnSlidePrev = document.getElementById('btn-slide-prev');
+            const btnSlideNext = document.getElementById('btn-slide-next');
+            const btnSlideNextIcon = btnSlideNext ? btnSlideNext.querySelector('i') : null;
+            const slidePosLabel = document.getElementById('slide-position-label');
+            const progressLine = document.getElementById('stepper-progress-line');
+            const slidesViewport = document.getElementById('slides-viewport');
+            const screenApp = document.getElementById('screen-app');
+            const totalSlides = slidePanels.length;
+            const revealedSlides = new Set();
+
+            let currentSlide = 0;
+
+            function goToSlide(index) {
+                if (totalSlides === 0) return;
+                index = Math.max(0, Math.min(totalSlides - 1, index));
+                currentSlide = index;
+
+                slidePanels.forEach((panel, i) => {
+                    panel.classList.remove('slide-active', 'slide-prev', 'slide-next');
+                    if (i === index) {
+                        panel.classList.add('slide-active');
+                    } else if (i < index) {
+                        panel.classList.add('slide-prev');
+                    } else {
+                        panel.classList.add('slide-next');
+                    }
+                    // 'reveal' plays a forwards-filled animation that forces opacity:1.
+                    // If left on an inactive panel, it overrides the slide-prev/slide-next
+                    // opacity:0 rule and the panel stays visible, overlapping the active one.
+                    if (i !== index) {
+                        panel.classList.remove('reveal');
+                    }
+                });
+
+                stepperItems.forEach((item, i) => {
+                    item.classList.toggle('is-active', i === index);
+                    item.classList.toggle('is-done', i < index);
+                });
+
+                if (progressLine) {
+                    const pct = totalSlides <= 1 ? 0 : (index / (totalSlides - 1)) * 100;
+                    progressLine.style.width = pct + '%';
+                }
+
+                if (slidePosLabel) slidePosLabel.textContent = `${index + 1} / ${totalSlides}`;
+                if (btnSlidePrev) btnSlidePrev.disabled = index === 0;
+                if (btnSlideNextIcon) {
+                    const isLast = index === totalSlides - 1;
+                    btnSlideNextIcon.classList.toggle('fa-arrow-right', !isLast);
+                    btnSlideNextIcon.classList.toggle('fa-check', isLast);
+                }
+                if (btnSlideNext) btnSlideNext.setAttribute('aria-label', index === totalSlides - 1 ? 'Selesai — kembali ke atas' : 'Lanjut ke langkah berikutnya');
+
+                // Trigger the typing/fade reveal animation on the panel that just became active
+                const activePanel = slidePanels[index];
+                activePanel.classList.remove('reveal');
+                void activePanel.offsetWidth; // force reflow so animation restarts
+                activePanel.classList.add('reveal');
+            }
+
+            // Stepper: click straight to any section
+            stepperItems.forEach((item) => {
+                item.addEventListener('click', () => {
+                    const idx = parseInt(item.dataset.slideIndex, 10);
+                    goToSlide(idx);
+                });
+            });
+
+            // Kembali / Lanjut buttons
+            if (btnSlidePrev) {
+                btnSlidePrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+            }
+            if (btnSlideNext) {
+                btnSlideNext.addEventListener('click', () => {
+                    if (currentSlide < totalSlides - 1) {
+                        goToSlide(currentSlide + 1);
+                    } else {
+                        // Last slide: scroll down to the floating progress tracker as a natural "finish" cue
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    }
+                });
+            }
+
+            // Keyboard arrow navigation (only while the app screen is visible, no modal open, not typing)
+            document.addEventListener('keydown', (e) => {
+                if (!screenApp || screenApp.classList.contains('hidden')) return;
+                const modalOverlay = document.getElementById('task-modal-overlay');
+                if (modalOverlay && !modalOverlay.classList.contains('hidden')) return;
+                const activeTag = (document.activeElement && document.activeElement.tagName) || '';
+                if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1);
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    goToSlide(currentSlide - 1);
+                }
+            });
+
+            // Swipe support for mobile
+            if (slidesViewport) {
+                let touchStartX = 0;
+                let touchStartY = 0;
+                const SWIPE_THRESHOLD = 45;
+
+                slidesViewport.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                slidesViewport.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].screenX;
+                    const touchEndY = e.changedTouches[0].screenY;
+                    const dx = touchEndX - touchStartX;
+                    const dy = touchEndY - touchStartY;
+                    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                        if (dx < 0) {
+                            goToSlide(currentSlide + 1);
+                        } else {
+                            goToSlide(currentSlide - 1);
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            // Initialize
+            goToSlide(0);
+
+            // Expose slide navigation so the checklist logic can auto-advance
+            // to the next section once every task in the current one is checked.
+            window.__slideNav = {
+                goToSlide: goToSlide,
+                getCurrentSlide: () => currentSlide,
+                getIndexForSection: (section) => slidePanels.indexOf(section),
+                total: totalSlides
+            };
+        });
+    </script>
+
+    <!-- ============================= -->
+    <!-- PROJECT STORE + SCREEN LOGIC  -->
+    <!-- ============================= -->
+    <script>
+        const PROJECTS_KEY = 'webDevProjectsStore';
+
+        function loadProjectsStore() {
+            try {
+                const raw = localStorage.getItem(PROJECTS_KEY);
+                return raw ? JSON.parse(raw) : { projects: {}, activeId: null };
+            } catch (e) {
+                return { projects: {}, activeId: null };
+            }
+        }
+
+        function saveProjectsStore(store) {
+            localStorage.setItem(PROJECTS_KEY, JSON.stringify(store));
+        }
+
+        function createProject(name) {
+            const store = loadProjectsStore();
+            const id = 'proj_' + Date.now();
+            store.projects[id] = { name: name, createdAt: Date.now(), tasks: {} };
+            store.activeId = id;
+            saveProjectsStore(store);
+            return id;
+        }
+
+        function setActiveProjectId(id) {
+            const store = loadProjectsStore();
+            store.activeId = id;
+            saveProjectsStore(store);
+        }
+
+        function deleteProject(id) {
+            const store = loadProjectsStore();
+            delete store.projects[id];
+            if (store.activeId === id) store.activeId = null;
+            saveProjectsStore(store);
+        }
+
+        window.updateActiveProjectTasks = function (tasks) {
+            const store = loadProjectsStore();
+            if (!store.activeId || !store.projects[store.activeId]) return;
+            store.projects[store.activeId].tasks = tasks;
+            saveProjectsStore(store);
+        };
+
+        function calcProjectProgress(project, totalTasksCount) {
+            if (!project || !project.tasks) return 0;
+            const done = Object.values(project.tasks).filter(Boolean).length;
+            return totalTasksCount === 0 ? 0 : Math.round((done / totalTasksCount) * 100);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const screenLanding = document.getElementById('screen-landing');
+            const screenApp = document.getElementById('screen-app');
+            const particlesBg = document.getElementById('particles-bg');
+            const btnNew = document.getElementById('btn-new-project');
+            const btnLoad = document.getElementById('btn-load-project');
+            const panel = document.getElementById('landing-panel');
+            const btnStart = document.getElementById('btn-start');
+            const projectNameLabel = document.getElementById('active-project-name');
+            const btnBack = document.getElementById('btn-back-to-landing');
+
+            let pendingMode = null; // 'new' | 'load'
+            let pendingNewName = '';
+            let pendingLoadId = null;
+
+            function showStartButton(show) {
+                btnStart.classList.toggle('hidden', !show);
+                btnStart.dataset.status = 'idle';
+            }
+
+            function renderNewPanel() {
+                pendingMode = 'new';
+                pendingLoadId = null;
+                panel.classList.remove('hidden');
+                panel.innerHTML = `
+                    <div class="glass-panel rounded-xl p-4 animate-fade-in-up">
+                        <label class="text-xs text-gray-400 mb-2 block">Nama Project</label>
+                        <input id="input-project-name" type="text" placeholder="cth. Website Toko Kopi" maxlength="60"
+                            class="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary/60 transition-colors">
+                    </div>`;
+                const input = document.getElementById('input-project-name');
+                input.focus();
+                input.addEventListener('input', (e) => {
+                    pendingNewName = e.target.value.trim();
+                    showStartButton(pendingNewName.length > 0);
+                });
+                showStartButton(false);
+            }
+
+            function renderLoadPanel() {
+                pendingMode = 'load';
+                pendingNewName = '';
+                pendingLoadId = null;
+                panel.classList.remove('hidden');
+
+                const store = loadProjectsStore();
+                const ids = Object.keys(store.projects).sort((a, b) => store.projects[b].createdAt - store.projects[a].createdAt);
+
+                if (ids.length === 0) {
+                    panel.innerHTML = `
+                        <div class="glass-panel rounded-xl p-6 text-center animate-fade-in-up">
+                            <p class="text-xs text-gray-500">Belum ada project tersimpan. Coba "New Project" dulu, ya.</p>
+                        </div>`;
+                    showStartButton(false);
+                    return;
+                }
+
+                const totalTasks = document.querySelectorAll('.task-checkbox').length;
+                panel.innerHTML = `<div class="glass-panel rounded-xl p-2 max-h-64 overflow-y-auto space-y-1 animate-fade-in-up">${ids.map(id => {
+                    const p = store.projects[id];
+                    const pct = calcProjectProgress(p, totalTasks);
+                    const dateStr = new Date(p.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                    return `
+                        <div class="project-row flex items-center gap-3 p-3 rounded-lg cursor-pointer border border-transparent hover:bg-white/5 transition-colors" data-id="${id}">
+                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-folder text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 text-left">
+                                <p class="text-sm font-medium text-gray-200 truncate">${escapeHtml(p.name)}</p>
+                                <p class="text-[11px] text-gray-500">${pct}% selesai &middot; ${dateStr}</p>
+                            </div>
+                            <button type="button" class="project-delete-btn w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors" data-id="${id}" aria-label="Hapus project">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>`;
+                }).join('')}</div>`;
+
+                panel.querySelectorAll('.project-row').forEach(row => {
+                    row.addEventListener('click', () => {
+                        panel.querySelectorAll('.project-row').forEach(r => r.classList.remove('is-selected'));
+                        row.classList.add('is-selected');
+                        pendingLoadId = row.dataset.id;
+                        showStartButton(true);
+                    });
+                });
+
+                panel.querySelectorAll('.project-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteProject(btn.dataset.id);
+                        if (pendingLoadId === btn.dataset.id) {
+                            pendingLoadId = null;
+                            showStartButton(false);
+                        }
+                        renderLoadPanel();
+                    });
+                });
+
+                showStartButton(false);
+            }
+
+            btnNew.addEventListener('click', renderNewPanel);
+            btnLoad.addEventListener('click', renderLoadPanel);
+
+            btnStart.addEventListener('click', () => {
+                if (btnStart.dataset.status !== 'idle') return; // already animating
+
+                let activeId = null;
+                if (pendingMode === 'new' && pendingNewName) {
+                    activeId = createProject(pendingNewName);
+                } else if (pendingMode === 'load' && pendingLoadId) {
+                    activeId = pendingLoadId;
+                    setActiveProjectId(activeId);
+                }
+                if (!activeId) return;
+
+                const store = loadProjectsStore();
+                const project = store.projects[activeId];
+
+                // Play the button's loading -> success micro-interaction first,
+                // then hand off to the screen transition for a single smooth flow.
+                btnStart.dataset.status = 'loading';
+
+                setTimeout(() => {
+                    btnStart.dataset.status = 'success';
+
+                    setTimeout(() => {
+                        projectNameLabel.textContent = project.name;
+
+                        if (window.applyProjectTasks) {
+                            window.applyProjectTasks(project.tasks || {});
+                        }
+
+                        screenLanding.classList.add('is-leaving');
+                        if (particlesBg) particlesBg.classList.add('is-leaving');
+                        setTimeout(() => {
+                            screenLanding.classList.add('hidden');
+                            if (particlesBg) {
+                                particlesBg.classList.add('hidden');
+                                if (window.pauseParticlesAnimation) window.pauseParticlesAnimation();
+                            }
+                            screenApp.classList.remove('hidden');
+                            screenApp.classList.add('is-hidden-init');
+                            void screenApp.offsetWidth; // force reflow
+                            requestAnimationFrame(() => {
+                                screenApp.classList.add('is-entered');
+                            });
+                            btnStart.dataset.status = 'idle';
+                        }, 500);
+                    }, 550);
+                }, 650);
+            });
+
+            if (btnBack) {
+                btnBack.addEventListener('click', () => {
+                    screenApp.classList.remove('is-entered');
+                    screenApp.classList.add('is-hidden-init');
+                    if (window.resumeParticlesAnimation) window.resumeParticlesAnimation();
+                    setTimeout(() => {
+                        screenApp.classList.add('hidden');
+                        screenLanding.classList.remove('hidden', 'is-leaving');
+                        if (particlesBg) particlesBg.classList.remove('hidden', 'is-leaving');
+                        panel.classList.add('hidden');
+                        panel.innerHTML = '';
+                        showStartButton(false);
+                        pendingMode = null;
+                        pendingNewName = '';
+                        pendingLoadId = null;
+                    }, 400);
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup dynamic staggered delays for typing animation
+            document.querySelectorAll('section').forEach(section => {
+                const descs = section.querySelectorAll('.task-desc');
+                descs.forEach((desc, index) => {
+                    desc.style.animationDelay = `${(index * 0.15) + 0.3}s`;
+                });
+            });
+
+            // Intersection Observer for scroll animations
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal');
+                        entry.target.classList.remove('opacity-0');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.observer-target').forEach((elem) => {
+                observer.observe(elem);
+            });
+
+            // --- CHECKLIST & PROGRESS LOGIC ---
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressSpinner = document.getElementById('progress-spinner');
+            const congratsMsg = document.getElementById('congrats-msg');
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    applyTaskStyle(e.target);
+                    persistCurrentTasks();
+                    updateProgress();
+                    
+                    if(e.target.checked) {
+                        const container = e.target.closest('.task-container');
+                        container.classList.add('animate-bounce-slight');
+                        setTimeout(() => container.classList.remove('animate-bounce-slight'), 300);
+
+                        // Auto-next: once every task in this section is checked,
+                        // move on to the next section automatically.
+                        const section = e.target.closest('section[id]');
+                        if (section && window.__slideNav) {
+                            const sectionBoxes = section.querySelectorAll('.task-checkbox');
+                            const allDone = Array.from(sectionBoxes).every(box => box.checked);
+                            if (allDone) {
+                                const idx = window.__slideNav.getIndexForSection(section);
+                                const isCurrent = idx === window.__slideNav.getCurrentSlide();
+                                const hasNext = idx > -1 && idx < window.__slideNav.total - 1;
+                                if (isCurrent && hasNext) {
+                                    setTimeout(() => window.__slideNav.goToSlide(idx + 1), 600);
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
+            function persistCurrentTasks() {
+                const state = {};
+                checkboxes.forEach(cb => { state[cb.id] = cb.checked; });
+                if (window.updateActiveProjectTasks) {
+                    window.updateActiveProjectTasks(state);
+                }
+            }
+
+            window.applyProjectTasks = function (tasksObj) {
+                checkboxes.forEach(cb => {
+                    cb.checked = !!tasksObj[cb.id];
+                    applyTaskStyle(cb);
+                });
+                updateProgress();
+            };
+            
+            function applyTaskStyle(checkbox) {
+                const container = checkbox.closest('.task-container');
+                const title = container.querySelector('.task-title');
+                
+                if(checkbox.checked) {
+                    container.classList.add('opacity-50', 'bg-white/5');
+                    title.classList.add('line-through', 'text-gray-500');
+                    title.classList.remove('text-gray-200');
+                } else {
+                    container.classList.remove('opacity-50', 'bg-white/5');
+                    title.classList.remove('line-through', 'text-gray-500');
+                    title.classList.add('text-gray-200');
+                }
+            }
+            
+            function updateProgress() {
+                const total = checkboxes.length;
+                const checked = document.querySelectorAll('.task-checkbox:checked').length;
+                const percentage = total === 0 ? 0 : Math.round((checked / total) * 100);
+                
+                progressBar.style.width = percentage + '%';
+                progressText.innerText = `${checked} / ${total} Selesai`;
+                
+                if(checked === total && total > 0) {
+                    progressSpinner.classList.remove('fa-spinner', 'animate-spin', 'text-primary');
+                    progressSpinner.classList.add('fa-check-circle', 'text-white');
+                    progressText.classList.remove('text-primary', 'bg-primary/10');
+                    progressText.classList.add('text-white', 'bg-white/20');
+                    congratsMsg.classList.remove('hidden');
+                } else {
+                    progressSpinner.classList.add('fa-spinner', 'animate-spin', 'text-primary');
+                    progressSpinner.classList.remove('fa-check-circle', 'text-white');
+                    progressText.classList.add('text-primary', 'bg-primary/10');
+                    progressText.classList.remove('text-white', 'bg-white/20');
+                    congratsMsg.classList.add('hidden');
+                }
+            }
+            
+            updateProgress();
+        });
+    </script>
+
+    <!-- ============================= -->
+    <!-- FLUID PARTICLES BACKGROUND    -->
+    <!-- (Landing screen only, monochrome, Perlin-noise driven) -->
+    <!-- ============================= -->
+    <script>
+        (function () {
+            // --- Perlin noise helper (vanilla JS port) ---
+            function createNoise() {
+                const permutation = [
+                    151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140,
+                    36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120,
+                    234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+                    88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71,
+                    134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133,
+                    230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161,
+                    1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130,
+                    116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250,
+                    124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227,
+                    47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44,
+                    154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98,
+                    108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34,
+                    242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14,
+                    239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121,
+                    50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243,
+                    141, 128, 195, 78, 66, 215, 61, 156, 180,
+                ];
+                const p = new Array(512);
+                for (let i = 0; i < 256; i++) p[256 + i] = p[i] = permutation[i];
+
+                function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+                function lerp(t, a, b) { return a + t * (b - a); }
+                function grad(hash, x, y, z) {
+                    const h = hash & 15;
+                    const u = h < 8 ? x : y;
+                    const v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
+                    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+                }
+
+                return {
+                    simplex3: function (x, y, z) {
+                        const X = Math.floor(x) & 255;
+                        const Y = Math.floor(y) & 255;
+                        const Z = Math.floor(z) & 255;
+                        x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+                        const u = fade(x), v = fade(y), w = fade(z);
+                        const A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z;
+                        const B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
+                        return lerp(w,
+                            lerp(v, lerp(u, grad(p[AA], x, y, z), grad(p[BA], x - 1, y, z)),
+                                    lerp(u, grad(p[AB], x, y - 1, z), grad(p[BB], x - 1, y - 1, z))),
+                            lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1), grad(p[BA + 1], x - 1, y, z - 1)),
+                                    lerp(u, grad(p[AB + 1], x, y - 1, z - 1), grad(p[BB + 1], x - 1, y - 1, z - 1)))
+                        );
+                    }
+                };
+            }
+
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d', { alpha: true });
+            if (!ctx) return;
+
+            const noise = createNoise();
+            const PARTICLE_COUNT = window.innerWidth < 768 ? 70 : 140;
+            const NOISE_INTENSITY = 0.003;
+            const SIZE_MIN = 0.5, SIZE_MAX = 2;
+
+            let particles = [];
+            let rafId = null;
+            let running = false;
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function makeParticle() {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * (SIZE_MAX - SIZE_MIN) + SIZE_MIN,
+                    vx: 0, vy: 0,
+                    life: Math.random() * 100,
+                    maxLife: 100 + Math.random() * 50,
+                };
+            }
+
+            function initParticles() {
+                resizeCanvas();
+                particles = Array.from({ length: PARTICLE_COUNT }, makeParticle);
+            }
+
+            function tick() {
+                // Monochrome: near-black wash for trails + soft white particles,
+                // matching the site's dark/grayscale theme regardless of OS color scheme.
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (const particle of particles) {
+                    particle.life += 1;
+                    if (particle.life > particle.maxLife) {
+                        particle.life = 0;
+                        particle.x = Math.random() * canvas.width;
+                        particle.y = Math.random() * canvas.height;
+                    }
+
+                    const opacity = Math.sin((particle.life / particle.maxLife) * Math.PI) * 0.35;
+
+                    const n = noise.simplex3(
+                        particle.x * NOISE_INTENSITY,
+                        particle.y * NOISE_INTENSITY,
+                        Date.now() * 0.0001
+                    );
+                    const angle = n * Math.PI * 4;
+                    particle.vx = Math.cos(angle) * 2;
+                    particle.vy = Math.sin(angle) * 2;
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    if (particle.x < 0) particle.x = canvas.width;
+                    if (particle.x > canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = canvas.height;
+                    if (particle.y > canvas.height) particle.y = 0;
+
+                    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                if (running) rafId = requestAnimationFrame(tick);
+            }
+
+            function start() {
+                if (running) return;
+                running = true;
+                rafId = requestAnimationFrame(tick);
+            }
+
+            function stop() {
+                running = false;
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+
+            // Exposed so the landing <-> app screen transition can pause/resume
+            // the animation loop (saves CPU/battery while the app screen is active).
+            window.pauseParticlesAnimation = stop;
+            window.resumeParticlesAnimation = start;
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                initParticles();
+                start();
+            });
+        })();
+    </script>
+</body>
+</html>
